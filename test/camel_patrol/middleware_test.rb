@@ -5,18 +5,31 @@ describe CamelPatrol::Middleware do
 
   describe 'on request' do
     let(:incoming) { {} }
-    let(:params_env_path) { 'action_dispatch.request.request_parameters' }
     let(:params) do
       {
-        params_env_path => {
-          'dwelling' => { 'squareFootage' => 5000 }
-        }
+        'dwelling' => { 'squareFootage' => 5000 }
       }
     end
-    let(:app) do
-      proc do
-        incoming[:params] = env[params_env_path]
-        [200, {}, ['{}']]
+
+    if Rails::VERSION::MAJOR < 5
+      let(:env_params) do
+        { 'action_dispatch.request.request_parameters' => params }
+      end
+      let(:app) do
+        proc do
+          incoming[:params] = env['action_dispatch.request.request_parameters']
+          [200, {}, ['{}']]
+        end
+      end
+    else
+      let(:env_params) do
+        { 'rack.input' => StringIO.new(params.to_json) }
+      end
+      let(:app) do
+        proc do
+          incoming[:params] = JSON.parse(env['rack.input'].read)
+          [200, {}, ['{}']]
+        end
       end
     end
 
@@ -26,7 +39,7 @@ describe CamelPatrol::Middleware do
 
     describe 'when content-type JSON' do
       let(:env) do
-        params.merge('CONTENT_TYPE' => 'application/json; charset=utf-8')
+        env_params.merge('CONTENT_TYPE' => 'application/json; charset=utf-8')
       end
 
       it 'snake_cases the params' do
@@ -37,7 +50,7 @@ describe CamelPatrol::Middleware do
 
     describe 'when content-type not JSON' do
       let(:env) do
-        params.merge('CONTENT_TYPE' => 'text/plain; charset=utf-8')
+        env_params.merge('CONTENT_TYPE' => 'text/plain; charset=utf-8')
       end
 
       it 'does nothing' do

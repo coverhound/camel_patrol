@@ -55,7 +55,7 @@ GIT
       thor (>= 0.18.1, < 2.0)
 
 PATH
-  remote: .
+  remote: ..
   specs:
     camel_patrol (1.0.0)
       railties (>= 4.1.0, < 5.1)
