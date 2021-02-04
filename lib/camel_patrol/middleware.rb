@@ -17,14 +17,17 @@ module CamelPatrol
     def underscore_params(env)
       if ::Rails::VERSION::MAJOR < 5
         env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
-      else
-        request_body = JSON.parse(env["rack.input"].read)
-        request_body.deep_transform_keys!(&:underscore)
-        req = StringIO.new(request_body.to_json)
-
-        env["rack.input"] = req
-        env["CONTENT_LENGTH"] = req.length
+        return
       end
+
+      if !(request_body = safe_json_parse(env["rack.input"].read))
+        return
+      end
+
+      request_body.deep_transform_keys!(&:underscore)
+      req = StringIO.new(request_body.to_json)
+      env["rack.input"] = req
+      env["CONTENT_LENGTH"] = req.length
     end
 
     def camelize_response(response)
