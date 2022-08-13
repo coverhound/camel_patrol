@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test)/}) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "railties", ">= 4.1.0", "< 6.0"
+  spec.add_dependency "railties", ">= 5", "< 8"
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"

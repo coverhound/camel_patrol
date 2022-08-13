@@ -15,11 +15,6 @@ module CamelPatrol
     private
 
     def underscore_params(env)
-      if ::Rails::VERSION::MAJOR < 5
-        env["action_dispatch.request.request_parameters"].deep_transform_keys!(&:underscore)
-        return
-      end
-
       if !(request_body = safe_json_parse(env["rack.input"].read))
         return
       end
